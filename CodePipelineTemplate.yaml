@@ -1,0 +1,223 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+    TestPipeline:
+      Type: "AWS::CodePipeline::Pipeline"
+      Properties:
+            ArtifactStore:
+              Location: !Ref ArtifactStoreBucket
+              Type: S3
+            Name: TestPipeline
+            RoleArn: !GetAtt [CodePipelineRole, Arn]
+            Stages:
+              -
+                Name: Source
+                Actions: 
+                  -
+                    Name: SourceAction
+                    ActionTypeId: 
+                      Category: Source
+                      Owner: ThirdParty
+                      Provider: GitHub
+                      Version: 1
+                    OutputArtifacts: 
+                      -
+                        Name: MyApp
+                    Configuration: 
+                      Branch: master
+                      OAuthToken: 1e5f24208845b336fab80db5907c4683b1f575c9
+                      Owner: rajithII
+                      PollForSourceChanges: false
+                      Repo: sam-test2
+                    RunOrder: 1
+              -
+                Name: Build
+                Actions: 
+                  -
+                    Name: Build
+                    ActionTypeId: 
+                      Category: Build
+                      Owner: AWS
+                      Version: 1
+                      Provider: CodeBuild
+                    OutputArtifacts: 
+                      -
+                        Name: MyAppBuild
+                    InputArtifacts:
+                      - 
+                        Name: MyApp
+                    Configuration:
+                      ProjectName: !Ref TestBuild
+                    RunOrder: 1           
+              -        
+                Name: CreateStack
+                Actions:
+                  -
+                    Name: CreateStack
+                    InputArtifacts:
+                      - Name: MyAppBuild
+                    ActionTypeId:
+                      Category: Deploy
+                      Owner: AWS
+                      Version: 1
+                      Provider: CloudFormation
+                    Configuration:
+                      ActionMode: CHANGE_SET_REPLACE
+                      RoleArn: !GetAtt [StackDeploymentRoles, Arn]
+                      Capabilities: CAPABILITY_IAM
+                      StackName: CreateStack
+                      TemplatePath: MyAppBuild::outputTemplate.yaml
+                      ChangeSetName: MychangeSet
+                    OutputArtifacts: 
+                      -
+                        Name: App
+                    RunOrder: 1
+                  -
+                    Name: ExecuteStack
+                    InputArtifacts:
+                      - Name: App
+                    ActionTypeId:
+                      Category: Deploy
+                      Owner: AWS
+                      Version: 1
+                      Provider: CloudFormation
+                    Configuration: 
+                      ActionMode: CHANGE_SET_EXECUTE  
+                      RoleArn: !GetAtt [StackDeploymentRoles, Arn]                   
+                      ChangeSetName: MychangeSet                   
+                      StackName: CreateStack
+                    RunOrder: 2  
+              - 
+                Name: Approval
+                Actions:               
+                  -
+                    Name: Approval
+                    ActionTypeId:
+                      Category: Approval
+                      Owner: AWS
+                      Version: 1
+                      Provider: Manual
+                    Configuration:   
+                      NotificationArn:
+                        Fn::Sub: arn:aws:sns:us-east-2:848209496828:Production-Build-Approval
+                      CustomData: Approve once staging has been completed.
+                    RunOrder: 1
+              -
+                Name: ProductionBuild
+                Actions: 
+                    -
+                      Name: ProductionBuild
+                      ActionTypeId: 
+                        Category: Build
+                        Owner: AWS
+                        Version: 1
+                        Provider: CodeBuild
+                      InputArtifacts:
+                        - 
+                          Name: MyApp
+                      Configuration:
+                        ProjectName: !Ref ProdBuild
+                      RunOrder: 1  
+
+    ArtifactStoreBucket:  
+        Type: AWS::S3::Bucket
+        Properties:
+          BucketName: test-pipeline-bucket-aadhri
+          VersioningConfiguration:
+            Status: Enabled
+
+    CodePipelineRole:
+        Type: AWS::IAM::Role
+        Properties:
+          AssumeRolePolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              Effect: Allow
+              Principal:
+                Service: codepipeline.amazonaws.com
+              Action: sts:AssumeRole
+          Path: /
+          ManagedPolicyArns:
+            - arn:aws:iam::aws:policy/AWSCodePipelineFullAccess 
+            - arn:aws:iam::aws:policy/AmazonS3FullAccess   
+            - arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess
+            - arn:aws:iam::848209496828:policy/CloudFormationAdminAccess
+            - arn:aws:iam::848209496828:policy/sns-codepipeline-policy
+
+    TestBuild:
+        Type: "AWS::CodeBuild::Project"
+        Properties: 
+          Artifacts:
+            Type: CODEPIPELINE
+          Environment:
+            Type: LINUX_CONTAINER
+            ComputeType: BUILD_GENERAL1_SMALL
+            Image: aws/codebuild/ubuntu-base:14.04
+          Name: TestBuild
+          ServiceRole: !Ref CodeBuildServiceRole
+          Source:
+            Type: CODEPIPELINE
+
+    ProdBuild:
+        Type: "AWS::CodeBuild::Project"
+        Properties: 
+          Artifacts:
+            Type: CODEPIPELINE
+          Environment:
+            Type: LINUX_CONTAINER
+            ComputeType: BUILD_GENERAL1_SMALL
+            Image: aws/codebuild/ubuntu-base:14.04
+          Name: ProductionBuild
+          ServiceRole: !Ref CodeBuildServiceRole
+          Source:
+            Type: CODEPIPELINE
+            BuildSpec: production-buildspec.yml        
+ 
+
+    CodeBuildServiceRole:
+        Type: 'AWS::IAM::Role'
+        Properties:
+          AssumeRolePolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                -
+                    Effect: Allow
+                    Principal:
+                      Service:
+                          - codebuild.amazonaws.com
+                    Action:
+                      - 'sts:AssumeRole'
+          ManagedPolicyArns:
+              - 'arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess'   
+              - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
+              - 'arn:aws:iam::aws:policy/AmazonS3FullAccess' 
+              - 'arn:aws:iam::848209496828:policy/CloudFormationAdminAccess'    
+              - 'arn:aws:iam::848209496828:policy/LambdaAdminAccessPolicy'      
+
+    StackDeploymentRoles:
+      Type: 'AWS::IAM::Role'
+      Properties:
+         AssumeRolePolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+               -
+                  Effect: Allow
+                  Principal:
+                     Service:
+                        - lambda.amazonaws.com
+                        - cloudformation.amazonaws.com
+                        - apigateway.amazonaws.com
+                  Action:
+                     - 'sts:AssumeRole'
+         ManagedPolicyArns:
+             - arn:aws:iam::848209496828:policy/CloudFormationAdminAccess
+             - arn:aws:iam::aws:policy/AmazonAPIGatewayAdministrator
+             - arn:aws:iam::848209496828:policy/iam-policy-for-codepipeline
+             - arn:aws:iam::848209496828:policy/LambdaAdminAccessPolicy
+             - arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+   
+  
+
+
+
+
