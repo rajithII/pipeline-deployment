@@ -1,0 +1,6 @@
+version: 0.2
+phases:
+  build:
+    commands:
+      - chmod 755 deploy-stack.sh
+      - ./deploy-stack.sh 
