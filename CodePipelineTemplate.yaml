@@ -6,7 +6,7 @@ Resources:
             ArtifactStore:
               Location: !Ref ArtifactStoreBucket
               Type: S3
-            Name: TestPipeline
+            Name: LambdaName-Pipeline
             RoleArn: !GetAtt [CodePipelineRole, Arn]
             Stages:
               -
@@ -46,13 +46,13 @@ Resources:
                       - 
                         Name: MyApp
                     Configuration:
-                      ProjectName: !Ref TestBuild
+                      ProjectName: !Ref LambdaName-Stack-Build
                     RunOrder: 1           
               -        
-                Name: CreateStack
+                Name: LambdaNameStack
                 Actions:
                   -
-                    Name: CreateStack
+                    Name: LambdaNameStack
                     InputArtifacts:
                       - Name: MyAppBuild
                     ActionTypeId:
@@ -64,7 +64,7 @@ Resources:
                       ActionMode: CHANGE_SET_REPLACE
                       RoleArn: !GetAtt [StackDeploymentRoles, Arn]
                       Capabilities: CAPABILITY_IAM
-                      StackName: CreateStack
+                      StackName: LambdaNameStack
                       TemplatePath: MyAppBuild::outputTemplate.yaml
                       ChangeSetName: MychangeSet
                     OutputArtifacts: 
@@ -72,7 +72,7 @@ Resources:
                         Name: App
                     RunOrder: 1
                   -
-                    Name: ExecuteStack
+                    Name: LambdaNameExecuteStack
                     InputArtifacts:
                       - Name: App
                     ActionTypeId:
@@ -84,7 +84,7 @@ Resources:
                       ActionMode: CHANGE_SET_EXECUTE  
                       RoleArn: !GetAtt [StackDeploymentRoles, Arn]                   
                       ChangeSetName: MychangeSet                   
-                      StackName: CreateStack
+                      StackName: LambdaNameCreateStack
                     RunOrder: 2  
               - 
                 Name: Approval
@@ -102,7 +102,7 @@ Resources:
                       CustomData: Approve once staging has been completed.
                     RunOrder: 1
               -
-                Name: ProductionBuild
+                Name: LambdaNameStackProdBuild
                 Actions: 
                     -
                       Name: ProductionBuild
@@ -115,13 +115,13 @@ Resources:
                         - 
                           Name: MyApp
                       Configuration:
-                        ProjectName: !Ref ProdBuild
+                        ProjectName: !Ref LambdaNameStackProdBuild
                       RunOrder: 1  
 
     ArtifactStoreBucket:  
         Type: AWS::S3::Bucket
         Properties:
-          BucketName: test-pipeline-bucket-aadhri
+          BucketName: LambdaName-bucket-aadhri
           VersioningConfiguration:
             Status: Enabled
 
@@ -143,7 +143,7 @@ Resources:
             - arn:aws:iam::848209496828:policy/CloudFormationAdminAccess
             - arn:aws:iam::848209496828:policy/sns-codepipeline-policy
 
-    TestBuild:
+    LambdaNameBuild:
         Type: "AWS::CodeBuild::Project"
         Properties: 
           Artifacts:
@@ -152,12 +152,12 @@ Resources:
             Type: LINUX_CONTAINER
             ComputeType: BUILD_GENERAL1_SMALL
             Image: aws/codebuild/ubuntu-base:14.04
-          Name: TestBuild
+          Name: LambdaNameDeployment
           ServiceRole: !Ref CodeBuildServiceRole
           Source:
             Type: CODEPIPELINE
 
-    ProdBuild:
+    LambdaNameStackProdBuild:
         Type: "AWS::CodeBuild::Project"
         Properties: 
           Artifacts:
