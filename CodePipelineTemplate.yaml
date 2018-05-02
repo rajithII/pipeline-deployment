@@ -121,7 +121,7 @@ Resources:
     ArtifactStoreBucket:  
         Type: AWS::S3::Bucket
         Properties:
-          BucketName: LambdaName-bucket-aadhri
+          BucketName: Bucketname-bucket-aadhri
           VersioningConfiguration:
             Status: Enabled
 
