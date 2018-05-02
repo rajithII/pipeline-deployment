@@ -49,10 +49,10 @@ Resources:
                       ProjectName: !Ref LambdaNameBuild
                     RunOrder: 1           
               -        
-                Name: LambdaNameStack
+                Name: LambdaNameDeploymentStack
                 Actions:
                   -
-                    Name: LambdaNameStack
+                    Name: LambdaNameDeploymentStack
                     InputArtifacts:
                       - Name: MyAppBuild
                     ActionTypeId:
@@ -64,7 +64,7 @@ Resources:
                       ActionMode: CHANGE_SET_REPLACE
                       RoleArn: !GetAtt [StackDeploymentRoles, Arn]
                       Capabilities: CAPABILITY_IAM
-                      StackName: LambdaNameStack
+                      StackName: LambdaNameStackLambdaNaLambdaNameDeploymentStackmeDeploymentStack
                       TemplatePath: MyAppBuild::outputTemplate.yaml
                       ChangeSetName: MychangeSet
                     OutputArtifacts: 
@@ -84,7 +84,7 @@ Resources:
                       ActionMode: CHANGE_SET_EXECUTE  
                       RoleArn: !GetAtt [StackDeploymentRoles, Arn]                   
                       ChangeSetName: MychangeSet                   
-                      StackName: LambdaNameStack
+                      StackName: LambdaNameDeploymentStack
                     RunOrder: 2  
               - 
                 Name: Approval
