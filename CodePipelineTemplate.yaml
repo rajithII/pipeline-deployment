@@ -6,7 +6,7 @@ Resources:
             ArtifactStore:
               Location: !Ref ArtifactStoreBucket
               Type: S3
-            Name: LambdaName-Pipeline
+            Name: LambdaNamePipeline
             RoleArn: !GetAtt [CodePipelineRole, Arn]
             Stages:
               -
@@ -46,7 +46,7 @@ Resources:
                       - 
                         Name: MyApp
                     Configuration:
-                      ProjectName: !Ref LambdaName-Stack-Build
+                      ProjectName: !Ref LambdaNameBuild
                     RunOrder: 1           
               -        
                 Name: LambdaNameStack
@@ -152,7 +152,7 @@ Resources:
             Type: LINUX_CONTAINER
             ComputeType: BUILD_GENERAL1_SMALL
             Image: aws/codebuild/ubuntu-base:14.04
-          Name: LambdaNameDeployment
+          Name: LambdaNameDeploymentToS3
           ServiceRole: !Ref CodeBuildServiceRole
           Source:
             Type: CODEPIPELINE
