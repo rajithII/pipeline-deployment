@@ -97,8 +97,7 @@ Resources:
                       Version: 1
                       Provider: Manual
                     Configuration:   
-                      NotificationArn:
-                        Fn::Sub: arn:aws:sns:us-east-2:848209496828:Production-Build-Approval
+                      NotificationArn: !Ref SnsTopic
                       CustomData: Approve once staging has been completed.
                     RunOrder: 1
               -
@@ -124,6 +123,15 @@ Resources:
           BucketName: Bucketname-bucket-aadhri
           VersioningConfiguration:
             Status: Enabled
+    SnsTopic:        
+      Type: "AWS::SNS::Topic"
+      Properties: 
+        DisplayName: LambdaNameProductionApproval
+        Subscription: 
+          -
+            Endpoint: rajith.v@iinerds.com
+            Protocol: email
+        TopicName: LambdaNameProductionApproval
 
     CodePipelineRole:
         Type: AWS::IAM::Role
