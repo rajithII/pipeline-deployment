@@ -84,7 +84,7 @@ Resources:
                       ActionMode: CHANGE_SET_EXECUTE  
                       RoleArn: !GetAtt [StackDeploymentRoles, Arn]                   
                       ChangeSetName: MychangeSet                   
-                      StackName: LambdaNameCreateStack
+                      StackName: LambdaNameStack
                     RunOrder: 2  
               - 
                 Name: Approval
