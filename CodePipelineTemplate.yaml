@@ -64,7 +64,7 @@ Resources:
                       ActionMode: CHANGE_SET_REPLACE
                       RoleArn: !GetAtt [StackDeploymentRoles, Arn]
                       Capabilities: CAPABILITY_IAM
-                      StackName: LambdaNameStackLambdaNaLambdaNameDeploymentStackmeDeploymentStack
+                      StackName: LambdaNameDeploymentStack
                       TemplatePath: MyAppBuild::outputTemplate.yaml
                       ChangeSetName: MychangeSet
                     OutputArtifacts: 
