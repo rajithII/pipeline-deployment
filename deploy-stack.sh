@@ -3,8 +3,8 @@
 #Aauthor         :rajith.v@iinerds.com
 #Date            :12-04-2018
 #Version         :0.1    
-#Usage           :Package and deploy the cloudformation template and the lambda function to s3 bucket
-#====================================================================================================
+#Usage           :Create cloudformation stack for the pipeline deployment
+#========================================================================
 
 #Replace the occurence of LambdaName in the CodePipelineTemplate.yaml to the value of $LambdaName
 sed -i -e 's/LambdaName/'"$LambdaName"'/g' CodePipelineTemplate.yaml
