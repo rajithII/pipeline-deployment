@@ -27,7 +27,7 @@ Resources:
                       OAuthToken: c3217e4a166371f6838b4d6418192d0eaefcc61e
                       Owner: rajithII
                       PollForSourceChanges: false
-                      Repo: reponame
+                      Repo: Reponame
                     RunOrder: 1
               -
                 Name: Build
