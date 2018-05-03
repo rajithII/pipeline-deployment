@@ -24,7 +24,7 @@ Resources:
                         Name: MyApp
                     Configuration: 
                       Branch: master
-                      OAuthToken: 1e5f24208845b336fab80db5907c4683b1f575c9
+                      OAuthToken: c3217e4a166371f6838b4d6418192d0eaefcc61e
                       Owner: rajithII
                       PollForSourceChanges: false
                       Repo: sam-test2
