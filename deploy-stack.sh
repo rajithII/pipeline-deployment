@@ -19,6 +19,9 @@ sed -i -e 's/Bucketname/'"$bucketname"'/g' CodePipelineTemplate.yaml
 #Upload CodePipelineTemplate.yaml to S3bucket
 aws s3 cp CodePipelineTemplate.yaml s3://aadhri-test-buck/
 
+#Wait untill the creation of stack
+aws cloudformation wait stack-create-complete --stack-name $LambdaName-Pipeline-Stack
+
 #Create Stack
 aws cloudformation create-stack --stack-name $LambdaName-Pipeline-Stack --template-url https://s3.us-east-2.amazonaws.com/aadhri-test-buck/CodePipelineTemplate.yaml --capabilities CAPABILITY_IAM 
 
